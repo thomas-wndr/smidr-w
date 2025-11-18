@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smidr Agentpanel</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <header>
+        <h1>Smidr agentpanel</h1>
+        <p>Logg inn for å snakke med landmåleragenten eller andre agenter.</p>
+      </header>
+
+      <section id="login-section" class="card">
+        <h2>Innlogging</h2>
+        <form id="login-form">
+          <label>
+            Brukernavn
+            <input type="text" name="username" autocomplete="username" required />
+          </label>
+          <label>
+            Passord
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Logg inn</button>
+          <p class="form-feedback" id="login-feedback"></p>
+        </form>
+      </section>
+
+      <section id="app-section" class="card hidden">
+        <div class="section-header">
+          <div>
+            <h2>Agentforespørsel</h2>
+            <p id="welcome-text"></p>
+          </div>
+          <button id="logout-button" class="secondary">Logg ut</button>
+        </div>
+        <form id="query-form">
+          <label>
+            Agent-ID
+            <input type="text" name="agentId" placeholder="agent_xxx" required />
+          </label>
+          <label>
+            Melding til agenten
+            <textarea name="message" rows="6" placeholder="Still et spørsmål..." required></textarea>
+          </label>
+          <button type="submit">Send</button>
+        </form>
+        <div class="response">
+          <h3>Svar</h3>
+          <pre id="agent-reply">Ingen forespørsel enda.</pre>
+        </div>
+      </section>
+    </main>
+    <script src="./config.js"></script>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
