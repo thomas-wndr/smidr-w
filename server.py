@@ -16,6 +16,45 @@ DEFAULT_PASSWORD = "change-me"
 SESSION_TTL_SECONDS = 8 * 60 * 60  # 8 hours
 
 
+def parse_allowed_origins() -> list[str]:
+    raw = os.environ.get("ALLOWED_ORIGINS", "")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+ALLOWED_ORIGINS = parse_allowed_origins()
+
+
+def bool_from_env(value: Optional[str], fallback: bool) -> bool:
+    if value is None:
+        return fallback
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def cookie_settings() -> list[str]:
+    same_site_override = os.environ.get("SESSION_COOKIE_SAMESITE")
+    same_site = (
+        f"SameSite={same_site_override}"
+        if same_site_override
+        else ("SameSite=None" if ALLOWED_ORIGINS else "SameSite=Lax")
+    )
+    secure_flag = bool_from_env(os.environ.get("SESSION_COOKIE_SECURE"), bool(ALLOWED_ORIGINS))
+    attributes = ["HttpOnly", "Path=/", same_site]
+    if secure_flag:
+        attributes.append("Secure")
+    return attributes
+
+
+COOKIE_SETTINGS = cookie_settings()
+
+
+def build_cookie_header(value: str, expires: Optional[str] = None) -> str:
+    parts = [f"session_id={value}"]
+    if expires:
+        parts.append(f"Expires={expires}")
+    parts.extend(COOKIE_SETTINGS)
+    return "; ".join(parts)
+
+
 def read_request_body(handler: BaseHTTPRequestHandler) -> Dict:
     content_length = int(handler.headers.get("Content-Length", "0"))
     raw_body = handler.rfile.read(content_length) if content_length else b""
@@ -68,11 +107,32 @@ def extract_session_token(handler: BaseHTTPRequestHandler) -> Optional[str]:
     return morsel.value if morsel else None
 
 
+def resolve_request_origin(handler: BaseHTTPRequestHandler) -> Optional[str]:
+    origin = handler.headers.get("Origin")
+    if not origin:
+        return None
+    if "*" in ALLOWED_ORIGINS:
+        return origin
+    if origin in ALLOWED_ORIGINS:
+        return origin
+    return None
+
+
+def add_cors_headers(handler: BaseHTTPRequestHandler) -> None:
+    origin = resolve_request_origin(handler)
+    if not origin:
+        return
+    handler.send_header("Access-Control-Allow-Origin", origin)
+    handler.send_header("Vary", "Origin")
+    handler.send_header("Access-Control-Allow-Credentials", "true")
+
+
 def send_json(handler: BaseHTTPRequestHandler, status: HTTPStatus, payload: Dict) -> None:
     encoded = json.dumps(payload).encode("utf-8")
     handler.send_response(status)
     handler.send_header("Content-Type", "application/json")
     handler.send_header("Content-Length", str(len(encoded)))
+    add_cors_headers(handler)
     handler.end_headers()
     handler.wfile.write(encoded)
 
@@ -151,7 +211,7 @@ def call_openai_agent(agent_id: str, message: str) -> Dict:
 class SurveyAgentHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self) -> None:
         self.send_response(HTTPStatus.NO_CONTENT)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        add_cors_headers(self)
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
         self.end_headers()
@@ -186,9 +246,10 @@ class SurveyAgentHandler(BaseHTTPRequestHandler):
         token = SESSION_STORE.create(username)
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Set-Cookie", f"session_id={token}; HttpOnly; Path=/")
+        self.send_header("Set-Cookie", build_cookie_header(token))
         body = json.dumps({"message": "Innlogging vellykket"}).encode("utf-8")
         self.send_header("Content-Length", str(len(body)))
+        add_cors_headers(self)
         self.end_headers()
         self.wfile.write(body)
 
@@ -197,9 +258,13 @@ class SurveyAgentHandler(BaseHTTPRequestHandler):
         SESSION_STORE.delete(token)
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Set-Cookie", "session_id=deleted; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/")
+        self.send_header(
+            "Set-Cookie",
+            build_cookie_header("deleted", "Thu, 01 Jan 1970 00:00:00 GMT"),
+        )
         body = json.dumps({"message": "Logget ut"}).encode("utf-8")
         self.send_header("Content-Length", str(len(body)))
+        add_cors_headers(self)
         self.end_headers()
         self.wfile.write(body)
 
