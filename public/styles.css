@@ -1,0 +1,116 @@
+:root {
+  color-scheme: light;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #ffffff;
+  color: #111111;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #ffffff;
+  color: #111111;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+main.panel {
+  width: min(720px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+header h1 {
+  margin-bottom: 0.25rem;
+}
+
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+input,
+textarea {
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: inherit;
+  background: #fff;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  background: #111111;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+button.secondary {
+  background: transparent;
+  color: #111111;
+  border: 1px solid #111111;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.response pre {
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f8f8f8;
+  min-height: 120px;
+  white-space: pre-wrap;
+}
+
+.form-feedback {
+  min-height: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 1rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
