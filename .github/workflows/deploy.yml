@@ -27,10 +27,18 @@ jobs:
           python-version: '3.11'
       - name: Run py_compile
         run: python -m py_compile server.py
+      - name: Prepare static bundle
+        run: |
+          mkdir -p site
+          cp index.html site/
+          cp styles.css site/
+          cp app.js site/
+          cp config.js site/
+          if [ -d assets ]; then cp -R assets site/assets; fi
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public
+          path: site
 
   deploy:
     needs: build

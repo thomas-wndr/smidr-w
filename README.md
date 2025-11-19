@@ -1,61 +1,71 @@
 # Smidr webagent
 
-En enkel innlogget webflate for å sende meldinger til landmåleragenten (eller andre agenter) du har laget i OpenAI Agent Builder. Løsningen kjører uten eksterne rammeverk slik at den kan brukes i miljøer uten tilgang til npm/pip, og består av:
+En enkel, innlogget webflate for å snakke med agentene dine i OpenAI Agent Builder. Løsningen kjører uten rammeverk (kun standard Python + statiske filer) slik at den fungerer både på Hostinger og GitHub Pages.
 
-- `server.py` – et lite HTTP-API som håndterer innlogging, økter og proxy-kall til OpenAI sitt Responses-API.
-- `public/` – statiske filer (HTML/CSS/JS) med hvit bakgrunn og svart tekst.
+## Struktur
 
-## Konfigurasjon
+- `server.py` – minimal HTTP-server som håndterer innlogging, økter og proxy-kall til OpenAI sitt Responses-API.
+- `index.html`, `styles.css`, `app.js`, `config.js` – svart/hvitt front-end som viser et innloggingskort og et sentrert chatgrensesnitt.
 
-Serveren leser følgende miljøvariabler:
+## Miljøvariabler
+
+**Lokalt:** Kopier `.env.example` til `.env` og fyll inn verdiene dine. Filen `.env` er ignorert i Git.
+
+**På Hostinger:** Gå til Websites → smidr.org → Advanced → Environment Variables (eller "Miljøvariabler"). Legg inn hver variabel som en egen oppføring (nøkkel = variabelnavn, verdi = innholdet). Du trenger ikke en `.env`-fil på Hostinger – bruk kontrollpanelet.
 
 | Variabel | Standard | Beskrivelse |
 | --- | --- | --- |
-| `ADMIN_USERNAME` | `admin` | Brukernavn for innlogging. |
-| `ADMIN_PASSWORD` | `change-me` | Passord for innlogging. |
-| `OPENAI_API_KEY` | *(ingen)* | Påkrevd. API-nøkkel med tilgang til agentene dine. |
+| `OPENAI_API_KEY` | *(ingen)* | **Påkrevd.** Nøkkel som kan kalle agenten(e) dine. |
+| `ADMIN_USERNAME` | `admin` | Brukes når `APP_USERS` ikke er satt. |
+| `ADMIN_PASSWORD` | `change-me` | Passord for standardbrukeren. |
+| `APP_USERS` | *(tom)* | JSON som beskriver flere brukere/tilganger. Eksempel under. |
+| `DEFAULT_ALLOWED_PAGES` | `default` | Kommaseparerte sider som standardbrukeren får tilgang til. |
+| `ALLOWED_ORIGINS` | *(tom)* | Kommaseparerte opprinnelser som får kalle API-et via CORS. Sett til `https://smidr.org` hvis frontenden ligger et annet sted. |
+| `SESSION_COOKIE_SAMESITE` | *(auto)* | Overstyr `SameSite` for sesjonskapselen. |
+| `SESSION_COOKIE_SECURE` | *(auto)* | Sett til `true` når du bruker `SameSite=None`. |
 | `HOST` | `0.0.0.0` | Adresse serveren binder seg til. |
 | `PORT` | `8000` | HTTP-port. |
-| `ALLOWED_ORIGINS` | *(tom)* | Kommaseparert liste med opprinnelser (f.eks. `https://dittnavn.github.io`) som får kalle API-et via CORS. Bruk `*` for å åpne for alle (anbefales ikke). |
-| `SESSION_COOKIE_SAMESITE` | *(auto)* | Sett til `None`, `Lax` eller `Strict` for å overstyre standardverdi. |
-| `SESSION_COOKIE_SECURE` | *(auto)* | Sett til `true` for å tvinge `Secure`-flagg på informasjonskapselen (kreves når `SameSite=None`). |
 
-Når `ALLOWED_ORIGINS` er satt, eksponeres API-et via CORS og informasjonskapselen får automatisk `SameSite=None; Secure` dersom du ikke overstyrer dette eksplisitt.
+### Flere brukere / tilgangsstyring
+
+Sett `APP_USERS` til en JSON-struktur som beskriver brukere, passord og hvilke "pages" de får se i UI-et (benyttes i senere utvidelser):
+
+```json
+[
+  { "username": "anne", "password": "supersecret", "pages": ["agent-a", "agent-b"] },
+  { "username": "per", "password": "hunter2", "pages": ["agent-c"] }
+]
+```
+
+Hvis `APP_USERS` ikke er satt, brukes `ADMIN_USERNAME`/`ADMIN_PASSWORD` og `DEFAULT_ALLOWED_PAGES`.
 
 ## Frontend-konfigurasjon
 
-Filene under `public/` kan publiseres som statisk side (for eksempel på GitHub Pages). `public/config.js` inneholder et lite konfigurasjonsobjekt du kan endre:
+`config.js` beskriver hvordan klienten finner API-et og hvilket agent-ID-felt som skal forhåndsutfylles:
 
 ```js
 window.__APP_CONFIG__ = {
-  apiBaseUrl: '' // pek mot "https://smidr.org" når frontenden kjører et annet sted
+  apiBaseUrl: '',         // pek mot https://smidr.org når frontenden hostes et annet sted
+  defaultAgentId: ''      // valgfritt: forhåndsverdien i agent-feltet
 };
 ```
 
-La verdien være tom når du kjører frontenden fra samme domene som `server.py`. Sett den til `https://smidr.org` (eller et Hostinger-subdomene) dersom du f.eks. hoster UI-et på GitHub Pages og proxier API-et via Hostinger.
+La `apiBaseUrl` stå tom hvis UI-et lever på samme domene som `server.py`. Dersom du bruker GitHub Pages eller et annet CDN, sett `apiBaseUrl` til Hostinger-domenet der Python-serveren kjører og legg samme domene til i `ALLOWED_ORIGINS`.
 
 ## Kjøre lokalt
 
 ```bash
-export ADMIN_USERNAME="ditt-brukernavn"
-export ADMIN_PASSWORD="ditt-passord"
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 export OPENAI_API_KEY="sk-..."
 python server.py
 ```
 
-Applikasjonen er nå tilgjengelig på `http://localhost:8000`. Når du har logget inn, skriver du inn agent-IDen (fra OpenAI Agent Builder) og meldingen du ønsker å sende. Svar fra agenten vises umiddelbart i grensesnittet.
+Serveren svarer på `http://localhost:8000`. Når du har logget inn kan du skrive inn agent-ID og melding – svar vises i chatvinduet.
 
 ## Utrulling
 
-Løsningen krever kun Python 3.9+ og tilgang ut mot `api.openai.com`. Den kan kjøres som en systemd-tjeneste, Docker-container eller via Hostinger sin Python-støtte. Husk å legge inn miljøvariablene over i Hostinger sitt kontrollpanel og å sikre forbindelsen med HTTPS når du publiserer til `smidr.org`.
+- **Hostinger:** Repositoryet kan nå klones rett inn i `public_html/`. Etter `git pull` ligger `index.html`, `styles.css`, `app.js` og `config.js` i roten, så du trenger ingen ekstra flytte-steg. Sett miljøvariablene i Hostinger → Websites → smidr.org → Advanced → Environment Variables. Start Python-appen (eller kjør via `gunicorn`/FastCGI) slik du gjorde tidligere.
+- **GitHub Pages:** Workflowen `.github/workflows/deploy.yml` pakker de samme rotfilene i en `site/`-mappe og publiserer dem via GitHub Actions når du pusher til `main`. Sørg for at Pages er aktivert (Settings → Pages → GitHub Actions).
 
-### Deploy til GitHub Pages
-
-Repositoryet inneholder workflowen `.github/workflows/deploy.yml` som automatisk bygger og publiserer katalogen `public/` til GitHub Pages når du pusher til `main`.
-
-1. Aktiver GitHub Pages i repoet ditt (Settings → Pages → "Build and deployment" → GitHub Actions).
-2. Oppdater `public/config.js` slik at `apiBaseUrl` peker på domenet der `server.py` kjører (for eksempel `https://smidr.org`).
-3. På Hostinger setter du `ALLOWED_ORIGINS=https://<brukernavn>.github.io` og sørger for HTTPS. Dette lar GitHub Pages-frontend kommunisere med API-et.
-4. Dersom du bruker GitHub Pages må informasjonskapselen være tilgjengelig på tvers av domener. Sett derfor eventuelt `SESSION_COOKIE_SAMESITE=None` og `SESSION_COOKIE_SECURE=true` hvis du ønsker å overstyre standarden.
-
-Når workflowen har kjørt ferdig finner du en "Deployments"-oppføring i GitHub som peker til den publiserte siden. Backend (Hostinger) oppdateres som tidligere – GitHub Pages leverer kun frontend.
+Når GitHub Actions/Hostinger er ferdig deployet, peker domenet `smidr.org` til den siste versjonen og du kan administrere tilgangene ved å oppdatere `.env` og kjøre `git push`.

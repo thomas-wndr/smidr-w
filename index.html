@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smidr Agent Console</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="grid-overlay" aria-hidden="true"></div>
+    <main class="shell">
+      <section class="card login-card" id="login-card">
+        <div class="card-header">
+          <p class="eyebrow">Access required</p>
+          <h1>Smidr agent console</h1>
+          <p class="lede">Logg inn for å snakke med OpenAI-agenten din.</p>
+        </div>
+        <form id="login-form">
+          <label>
+            Brukernavn
+            <input type="text" name="username" autocomplete="username" required />
+          </label>
+          <label>
+            Passord
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Logg inn</button>
+          <p class="form-feedback" id="login-feedback" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card chat-card hidden" id="chat-card">
+        <header class="chat-header">
+          <div>
+            <p class="eyebrow" id="session-status">Ikke innlogget</p>
+            <h2>Agentdialog</h2>
+            <p class="lede">
+              Send meldinger til agenten og få svar direkte i konsollen.
+            </p>
+          </div>
+          <button type="button" class="ghost" id="logout-button">Logg ut</button>
+        </header>
+
+        <div class="agent-meta">
+          <label>
+            Agent-ID
+            <input
+              type="text"
+              id="agent-id"
+              name="agentId"
+              placeholder="agent_xxx"
+              spellcheck="false"
+              required
+            />
+          </label>
+          <div class="pill" id="access-pill" aria-live="polite"></div>
+        </div>
+
+        <div class="chat-window" id="chat-window">
+          <div class="message system">
+            <p>Ingen samtale enda. Send en melding for å starte.</p>
+          </div>
+        </div>
+
+        <form id="chat-form" autocomplete="off">
+          <label class="sr-only" for="message-input">Melding</label>
+          <textarea
+            id="message-input"
+            name="message"
+            rows="3"
+            placeholder="Still et spørsmål til agenten..."
+            required
+          ></textarea>
+          <div class="form-actions">
+            <button type="submit" id="send-button">Send</button>
+          </div>
+        </form>
+      </section>
+    </main>
+    <script src="./config.js"></script>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
+
