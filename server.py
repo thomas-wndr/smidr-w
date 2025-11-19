@@ -33,6 +33,31 @@ ALLOWED_STATIC_SUFFIXES = {
 }
 
 
+def load_env_file() -> None:
+    """Load environment variables from .env file if it exists."""
+    env_path = PUBLIC_DIR / ".env"
+    if not env_path.exists():
+        return
+    try:
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+                if key and value and key not in os.environ:
+                    os.environ[key] = value
+    except Exception:
+        pass
+
+
+load_env_file()
+
+
 def parse_allowed_origins() -> list[str]:
     raw = os.environ.get("ALLOWED_ORIGINS", "")
     return [origin.strip() for origin in raw.split(",") if origin.strip()]

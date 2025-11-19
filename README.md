@@ -11,7 +11,7 @@ En enkel, innlogget webflate for å snakke med agentene dine i OpenAI Agent Buil
 
 **Lokalt:** Kopier `.env.example` til `.env` og fyll inn verdiene dine. Filen `.env` er ignorert i Git.
 
-**På Hostinger:** Gå til Websites → smidr.org → Advanced → Environment Variables (eller "Miljøvariabler"). Legg inn hver variabel som en egen oppføring (nøkkel = variabelnavn, verdi = innholdet). Du trenger ikke en `.env`-fil på Hostinger – bruk kontrollpanelet.
+**På Hostinger:** Last opp `.env`-filen din til `public_html/` (samme mappe som `server.py`) via File Manager eller FTP. Serveren leser automatisk fra `.env`-filen hvis den finnes. Du kan også sette miljøvariabler via systemet hvis Hostinger støtter det, men `.env`-filen er enklest.
 
 | Variabel | Standard | Beskrivelse |
 | --- | --- | --- |
@@ -65,7 +65,7 @@ Serveren svarer på `http://localhost:8000`. Når du har logget inn kan du skriv
 
 ## Utrulling
 
-- **Hostinger:** Repositoryet kan nå klones rett inn i `public_html/`. Etter `git pull` ligger `index.html`, `styles.css`, `app.js` og `config.js` i roten, så du trenger ingen ekstra flytte-steg. Sett miljøvariablene i Hostinger → Websites → smidr.org → Advanced → Environment Variables. Start Python-appen (eller kjør via `gunicorn`/FastCGI) slik du gjorde tidligere.
+- **Hostinger:** Repositoryet kan nå klones rett inn i `public_html/`. Etter `git pull` ligger `index.html`, `styles.css`, `app.js` og `config.js` i roten, så du trenger ingen ekstra flytte-steg. Last opp `.env`-filen din til samme mappe via File Manager eller FTP. Start Python-appen (eller kjør via `gunicorn`/FastCGI) slik du gjorde tidligere.
 - **GitHub Pages:** Workflowen `.github/workflows/deploy.yml` pakker de samme rotfilene i en `site/`-mappe og publiserer dem via GitHub Actions når du pusher til `main`. Sørg for at Pages er aktivert (Settings → Pages → GitHub Actions).
 
 Når GitHub Actions/Hostinger er ferdig deployet, peker domenet `smidr.org` til den siste versjonen og du kan administrere tilgangene ved å oppdatere `.env` og kjøre `git push`.
