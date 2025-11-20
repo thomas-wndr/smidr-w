@@ -79,7 +79,7 @@
 <body>
     <header>
         <h1>KI</h1>
-        <button class="logout-btn" onclick="logout()">Logg ut</button>
+        <button class="logout-btn">Logg ut</button>
     </header>
     <div class="chat-container">
         <div id="chatkit-container">
