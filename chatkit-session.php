@@ -9,8 +9,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit;
 }
 
-$apiKey = getenv('OPENAI_API_KEY');
-$workflowId = getenv('WORKFLOW_ID'); // Changed from ASSISTANT_ID
+$apiKey = getenv('OPENAI_API_KEY') ?: ($_ENV['OPENAI_API_KEY'] ?? ($_SERVER['OPENAI_API_KEY'] ?? null));
+$workflowId = getenv('WORKFLOW_ID') ?: ($_ENV['WORKFLOW_ID'] ?? ($_SERVER['WORKFLOW_ID'] ?? null));
 
 if (!$apiKey || !$workflowId) {
     http_response_code(500);
@@ -27,7 +27,8 @@ $data = [
 
 $headers = [
     'Authorization: Bearer ' . $apiKey,
-    'Content-Type: application/json'
+    'Content-Type: application/json',
+    'OpenAI-Beta: chatkit_beta=v1'
 ];
 
 $ch = curl_init($url);
