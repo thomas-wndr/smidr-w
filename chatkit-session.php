@@ -22,7 +22,11 @@ if (!$apiKey || !$workflowId) {
 $url = 'https://api.openai.com/v1/chatkit/sessions';
 
 $data = [
-    'workflow' => $workflowId
+    'workflow' => $workflowId,
+    'user' => [
+        'id' => 'user-' . md5($_SESSION['username'] ?? 'guest'),
+        'name' => $_SESSION['username'] ?? 'Guest'
+    ]
 ];
 
 $headers = [
