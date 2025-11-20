@@ -1,164 +1,85 @@
-# Smidr.org - OpenAI Integration Guide
+# Smidr.org - Project Status & Handover
 
-## 🎯 Two Implementation Options
+**Last Updated:** November 20, 2025
+**Current Status:** ✅ Operational with OpenAI ChatKit
 
-You have **two ways** to integrate OpenAI with your website:
+## 🎯 Project Overview
+This project hosts a chat interface for `smidr.org` that connects to an OpenAI Agent Builder workflow. 
 
-### **Option 1: ChatKit (Recommended for Agent Builder)**
-✅ **Use this if**: You created your AI in OpenAI's Agent Builder  
-✅ **Pros**: Direct integration with workflows, simpler setup, pre-built UI  
-✅ **ID Format**: `wf_xxxxxxxxxx` (workflow ID)
-
-### **Option 2: Assistants API (Traditional)**
-✅ **Use this if**: You created a traditional Assistant  
-✅ **Pros**: More control, custom UI, works with Assistants  
-✅ **ID Format**: `asst_xxxxxxxxxx` (assistant ID)
+**Key Technology:**
+- **Frontend:** OpenAI ChatKit (Web Component)
+- **Backend:** PHP (for secure session token generation)
+- **Auth:** Simple PHP session-based login
+- **Hosting:** Hostinger
 
 ---
 
-## 🚀 Setup Instructions
+## 🏗️ Current Architecture
 
-### **For ChatKit (Option 1)**
+The project is currently configured to use **OpenAI ChatKit**, which connects directly to the Agent Builder workflow (`wf_...` ID).
 
-#### 1. Update Your `.env` File
+### **Active Files**
+| File | Purpose |
+|------|---------|
+| `index-chatkit.html` | **Main Interface**. Contains the ChatKit widget. (Should be renamed to `index.php` or set as default). |
+| `chatkit-session.php` | **Backend Endpoint**. Generates secure `client_secret` tokens for ChatKit using the API key. |
+| `login.php` | Handles user authentication. |
+| `logout.php` | Destroys the session. |
+| `config.php` | Loads environment variables from `.env`. |
+| `.env` | **Critical**. Stores secrets (API Key, Workflow ID, Password). **Not in Git**. |
+
+### **Legacy Files (Not in use)**
+*These files were for the previous Assistants API implementation and can be archived or ignored.*
+- `index.php` (Old custom chat UI)
+- `api.php` (Old backend for Assistants API)
+- `script.js` (Old frontend logic)
+- `style.css` (Old styling)
+
+---
+
+## ⚙️ Configuration
+
+### **1. Environment Variables (.env)**
+The `.env` file on Hostinger is correctly configured with the following structure:
+
 ```bash
-OPENAI_API_KEY=sk-proj-your_actual_api_key_here
+# OpenAI Configuration
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ChatKit Configuration (Active)
 WORKFLOW_ID=wf_69145e0b97e481909af5dd3041c90917016e2b21a97dc5e6
+
+# Application Authentication
 APP_USERNAME=admin
 APP_PASSWORD=your_secure_password
 ```
 
-#### 2. Configure Domain Allowlist
-1. Go to https://platform.openai.com/settings/organization/general
-2. Find "ChatKit Domain Allowlist"
-3. Add your domain: `smidr.org`
-4. Save changes
-
-#### 3. Upload Files to Hostinger
-Upload these files to your Hostinger web directory:
-- `index-chatkit.html` → Rename to `index.php` (or use as is)
-- `chatkit-session.php`
-- `login.php`
-- `logout.php`
-- `config.php`
-- `.env` (with your actual credentials)
-
-#### 4. Test Your Site
-Visit `https://smidr.org` and you should see the ChatKit interface!
+### **2. OpenAI Platform Settings**
+- **Domain Allowlist**: `smidr.org` has been added to the "ChatKit Domain Allowlist" in OpenAI Organization Settings. This is required for the widget to load.
 
 ---
 
-### **For Assistants API (Option 2)**
+## 🚀 Deployment Status
 
-#### 1. Create an Assistant
-1. Go to https://platform.openai.com/assistants
-2. Click "Create" or "+ New Assistant"
-3. Configure:
-   - **Name**: Your assistant name
-   - **Instructions**: Your AI's behavior instructions
-   - **Model**: GPT-4 or GPT-4 Turbo
-   - **Tools**: Enable as needed
-4. Copy the **Assistant ID** (starts with `asst_`)
-
-#### 2. Update Your `.env` File
-```bash
-OPENAI_API_KEY=sk-proj-your_actual_api_key_here
-ASSISTANT_ID=asst_your_actual_assistant_id_here
-APP_USERNAME=admin
-APP_PASSWORD=your_secure_password
-```
-
-#### 3. Upload Files to Hostinger
-Upload these files:
-- `index.php`
-- `api.php`
-- `script.js`
-- `style.css`
-- `login.php`
-- `logout.php`
-- `config.php`
-- `.env` (with your actual credentials)
-
-#### 4. Test Your Site
-Visit `https://smidr.org` and test the chat!
+1. **Files Uploaded**: `chatkit-session.php` and `index-chatkit.html` are uploaded to Hostinger.
+2. **Configuration**: `.env` file on Hostinger has been updated with the correct `WORKFLOW_ID`.
+3. **Verification**: The site loads the ChatKit interface successfully after login.
 
 ---
 
-## 📁 File Structure
+## � Handover Notes for Future Agents
 
-```
-smidr.org/
-├── .env                    # Your secret credentials (NEVER commit to Git!)
-├── .env.example            # Template for .env file
-├── .gitignore              # Prevents .env from being committed
-├── config.php              # Loads environment variables
-├── login.php               # Authentication endpoint
-├── logout.php              # Logout handler
-│
-# ChatKit Implementation (Option 1)
-├── index-chatkit.html      # ChatKit-based interface
-├── chatkit-session.php     # Generates ChatKit client_secret
-│
-# Assistants API Implementation (Option 2)
-├── index.php               # Traditional custom interface
-├── api.php                 # Assistants API backend
-├── script.js               # Frontend JavaScript
-└── style.css               # Styling
-```
+If you are picking up this project:
+
+1. **The "Truth" is ChatKit**: Ignore the old `api.php` / `script.js` implementation unless specifically asked to revert. Focus on `index-chatkit.html` and `chatkit-session.php`.
+2. **Workflow ID**: The project uses an Agent Builder workflow (`wf_...`), NOT an Assistant ID (`asst_...`).
+3. **Deployment**: Hostinger Git deployment was problematic due to existing files. We used manual file upload via Hostinger File Manager.
+4. **Next Tasks**:
+   - Rename `index-chatkit.html` to `index.php` on the server to make it the default page.
+   - Customize the ChatKit theme if requested (done in `index-chatkit.html`).
 
 ---
 
-## 🔒 Security Checklist
-
-- [ ] `.env` file is NOT committed to Git (check `.gitignore`)
-- [ ] Strong password set in `.env`
-- [ ] API key is kept secret
-- [ ] Domain allowlist configured (for ChatKit)
-- [ ] HTTPS enabled on your domain
-
----
-
-## 🐛 Troubleshooting
-
-### ChatKit Not Loading
-1. **Check domain allowlist**: Make sure `smidr.org` is in your OpenAI organization settings
-2. **Check workflow ID**: Verify it starts with `wf_`
-3. **Check API key**: Ensure it's valid and has correct permissions
-4. **Check browser console**: Look for error messages
-
-### Assistants API Errors
-1. **"Invalid assistant_id"**: Make sure ID starts with `asst_`, not `wf_`
-2. **"Failed to start run"**: Check that your Assistant exists and is published
-3. **"Configuration missing"**: Verify `.env` file is loaded correctly
-
-### Login Issues
-1. Check `config.php` is loading `.env` correctly
-2. Verify username/password in `.env` match your login attempt
-3. Check PHP session is working
-
----
-
-## 📚 Additional Resources
-
-- [OpenAI ChatKit Documentation](https://platform.openai.com/docs/guides/chatkit)
-- [OpenAI Assistants API Documentation](https://platform.openai.com/docs/assistants)
-- [OpenAI Agent Builder](https://platform.openai.com/agents)
-
----
-
-## 🆘 Need Help?
-
-If you encounter issues:
-1. Check the browser console for errors (F12 → Console tab)
-2. Check PHP error logs on Hostinger
-3. Verify all environment variables are set correctly
-4. Ensure all files are uploaded to the correct directory
-
----
-
-## 📝 Notes
-
-- **ChatKit** is the newer, simpler approach for Agent Builder workflows
-- **Assistants API** gives you more control but requires more setup
-- You can use **either** approach, but not both simultaneously
-- Keep your `.env` file secure and never share it publicly
+## � Security Reminders
+- **NEVER** commit the `.env` file to GitHub.
+- **NEVER** expose the `OPENAI_API_KEY` in frontend code (HTML/JS). It must only be used in `chatkit-session.php`.
