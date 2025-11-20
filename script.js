@@ -6,7 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessage(text, sender) {
         const div = document.createElement('div');
         div.classList.add('message', sender);
-        div.textContent = text;
+        // Use innerHTML with pre tag for multi-line messages
+        if (text.includes('\n')) {
+            const pre = document.createElement('pre');
+            pre.style.whiteSpace = 'pre-wrap';
+            pre.style.margin = '0';
+            pre.textContent = text;
+            div.appendChild(pre);
+        } else {
+            div.textContent = text;
+        }
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
@@ -70,7 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.error) {
                 removeTypingIndicator();
-                addMessage('Feil: ' + data.error, 'assistant');
+                let errorMsg = 'Feil: ' + data.error;
+                if (data.details) {
+                    errorMsg += '\nDetaljer: ' + JSON.stringify(data.details, null, 2);
+                }
+                addMessage(errorMsg, 'assistant');
+                console.error('API Error:', data);
             } else {
                 checkStatus(data.run_id);
             }
