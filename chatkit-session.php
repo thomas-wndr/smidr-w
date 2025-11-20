@@ -49,4 +49,4 @@ if ($httpCode !== 200) {
 
 $sessionData = json_decode($response, true);
 echo json_encode(['client_secret' => $sessionData['client_secret']]);
-?>
+

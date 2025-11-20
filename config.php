@@ -23,4 +23,4 @@ function loadEnv($path) {
 loadEnv(__DIR__ . '/.env');
 
 session_start();
-?>
+
